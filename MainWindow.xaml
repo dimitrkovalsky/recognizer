@@ -9,16 +9,17 @@
             <ColumnDefinition Width="90*"/>
         </Grid.ColumnDefinitions>
         <ListBox x:Name="historyListBox" Margin="0,0,0,0" VerticalAlignment="Top" MaxWidth="300" HorizontalAlignment="Right" ToolTip="History" MinWidth="200" MinHeight="300" Width="370" Height="auto" Grid.ColumnSpan="2" Grid.Column="1"/>
-        <Label HorizontalAlignment="Left" Margin="19,28,0,0" VerticalAlignment="Top">
-            <Label Content="Connection:" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        </Label>
-        <Label x:Name="connectionLbl" Content="not established" HorizontalAlignment="Left" Margin="153,33,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
-        <Label x:Name="lastCommandLbl" Content="-" HorizontalAlignment="Left" Margin="153,69,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.889,0.615"/>
-        <Label Content="Last command:" HorizontalAlignment="Left" Margin="24,69,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.64,0.231"/>
-        <Label x:Name="recStatusLbl" Content="not started" HorizontalAlignment="Left" Margin="153,110,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.311,0.577" Grid.ColumnSpan="2"/>
-        <Label Content="Recognizer status" HorizontalAlignment="Left" Margin="24,110,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.64,0.231"/>
-        <Label x:Name="serverStatusLbl" Content="not started" HorizontalAlignment="Left" Margin="153,155,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.311,0.577" Grid.ColumnSpan="2"/>
-        <Label Content="Server status" HorizontalAlignment="Left" Margin="24,155,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.64,0.231"/>
+        <Label HorizontalAlignment="Left" Margin="19,28,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="connectionLbl" Content="not established" HorizontalAlignment="Left" Margin="153,123,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lastCommandLbl" Content="-" HorizontalAlignment="Left" Margin="153,153,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.889,0.615"/>
+        <Label Content="Last command:" HorizontalAlignment="Left" Margin="24,153,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.64,0.231"/>
+        <Label x:Name="recStatusLbl" Content="not started" HorizontalAlignment="Left" Margin="153,194,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.311,0.577"/>
+        <Label Content="Recognizer status" HorizontalAlignment="Left" Margin="24,194,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.64,0.231"/>
+        <Label x:Name="serverStatusLbl" Content="not started" HorizontalAlignment="Left" Margin="153,239,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.311,0.577"/>
+        <Label Content="Server status" HorizontalAlignment="Left" Margin="24,240,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.64,0.231"/>
+        <Label Content="Connection:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="26,123,0,0" RenderTransformOrigin="0.342,0.538"/>
+        <ComboBox x:Name="devicesCombo" HorizontalAlignment="Left" Margin="24,38,0,0" VerticalAlignment="Top" Width="215"/>
+        <Label Content="Device :" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="24,10,0,0" RenderTransformOrigin="0.342,0.538"/>
 
     </Grid>
 </Window>

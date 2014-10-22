@@ -25,16 +25,44 @@ namespace recognizer
     {
         private Recognizer recognizer;
         private TransmissionManager transmission;
-        private bool run;
+        private bool transmissionRan = false;
+        private bool recognitionRan = false;
+        private Thread recognitionThread;
         private WinForms.NotifyIcon notifier = new WinForms.NotifyIcon();
+
         public MainWindow()
         {
             InitializeComponent();
+            ConfigureTransmission();
+            ConfigureRecognizer();
+            ScanAudioDevices();
+            // InitTray();
+            RunTransmission();
+        }
+
+        private void ScanAudioDevices(){
+            List<PXCMAudioSource.DeviceInfo> devices = recognizer.LoadAudioDevices();
+            if (devices != null && devices.Count != 0)
+                for (int i = 0; i < devices.Count-1; i++)
+                {
+                    this.Dispatcher.BeginInvoke(new Action(() => devicesCombo.Items.Add(devices[i].name)));
+                }
+            else
+                AddToHistory("DEVICES DOESN'T FOUND");
+        }
+        private void OnDisconnect()
+        {
+
+        }
+
+        private void ConfigureRecognizer(){
+            recognizer = new Recognizer(OnRecognized, AddToHistory);
+        }
+
+        private void ConfigureTransmission(){
             transmission = new TransmissionManager(OnReseivedMessage, OnSentMessage, AddToHistory);
             transmission.onConnectionStatusChanged += OnConnectionStatusChanged;
             transmission.onServerStatusChanged += OnServerStatusChanged;
-           // InitTray();
-            Run();
         }
 
         private void InitTray()
@@ -64,7 +92,7 @@ namespace recognizer
             }
         }
 
-   
+
         private void Menu_Open(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Open");
@@ -76,18 +104,16 @@ namespace recognizer
         }
 
 
-        private void Run()
+        private void RunTransmission()
         {
-            if (!run)
+            if (!transmissionRan)
             {
                 new Thread(() =>
               {
                   transmission.Run();
 
-                  //  recognizer = new Recognizer(OnRecognized, AddToHistory);
-                  //  recognizer.Run();
               }).Start();
-                run = true;
+                transmissionRan = true;
             }
         }
 
@@ -103,12 +129,14 @@ namespace recognizer
 
         private void OnReseivedMessage(Request message)
         {
-            switch (message.requestType) {
-                case Requests.START_RECOGNITION :
+            switch (message.requestType)
+            {
+                case Requests.START_RECOGNITION:
                     AddToHistory("Start recognition");
+                    OnRecognitionStart();
                     OnCommand("START RECOGNITION");
                     break;
-                case Requests.ADD_TO_DICTIONARY:  
+                case Requests.ADD_TO_DICTIONARY:
                     AddToHistory("Add to history commend");
                     OnCommand("ADD TO DICTIONARY");
                     break;
@@ -116,6 +144,18 @@ namespace recognizer
                     AddToHistory("Load history commend");
                     OnCommand("LOAD DICTIONARY");
                     break;
+            }
+        }
+
+        private void OnRecognitionStart()
+        {
+            if (!recognitionRan)
+            {
+                new Thread(() =>
+                {
+                    recognizer.Run();
+                }).Start();
+                recognitionRan = true;
             }
         }
 
@@ -140,7 +180,11 @@ namespace recognizer
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            transmission.Close();
+            if(transmissionRan)
+                transmission.Close();
+            if (recognitionRan)
+                recognizer.Close();
+
         }
     }
 }

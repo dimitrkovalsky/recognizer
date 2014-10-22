@@ -9,16 +9,38 @@ namespace recognizer
     public delegate void OnRecognized(PXCMSpeechRecognition.RecognitionData data);
     public delegate void Notify(String notify);
     
+   
     class Recognizer
     {
         private static List<PXCMAudioSource.DeviceInfo> devices = new List<PXCMAudioSource.DeviceInfo>();    
         private OnRecognized recognized;
         private Notify notify;
+        private bool running = false;
+        private bool dictationMode = false;
+        private List<Grammar> grammars = null;
+        private int checkedDevice = 0;
 
         public Recognizer(OnRecognized recognized, Notify notify)
         {
             this.recognized = recognized;
             this.notify = notify;
+        }
+
+  
+        public List<PXCMAudioSource.DeviceInfo> LoadAudioDevices()
+        {
+            PXCMSession session = PXCMSession.CreateInstance();
+            PXCMAudioSource source;
+            source = session.CreateAudioSource();
+            source.ScanDevices();
+            for (int i = 0; ; i++)
+            {
+                PXCMAudioSource.DeviceInfo dinfo;
+                if (source.QueryDeviceInfo(i, out dinfo) < pxcmStatus.PXCM_STATUS_NO_ERROR) break;
+                devices.Add(dinfo);
+                notify("Founr device : " + dinfo.name);
+            }
+            return devices;
         }
 
         public void Run()
@@ -43,16 +65,8 @@ namespace recognizer
 
             source = session.CreateAudioSource();
             source.ScanDevices();
-
-            for (int i = 0; ; i++)
-            {
-                PXCMAudioSource.DeviceInfo dinfo;
-                if (source.QueryDeviceInfo(i, out dinfo) < pxcmStatus.PXCM_STATUS_NO_ERROR) break;
-                devices.Add(dinfo);
-                notify("Device : " + dinfo.name);
-            }
-
-
+            if (devices == null)
+                LoadAudioDevices();
             source.SetDevice(GetCheckedSource());
 
             PXCMSpeechRecognition.Handler handler = new PXCMSpeechRecognition.Handler();
@@ -60,13 +74,17 @@ namespace recognizer
             // sr is a PXCMSpeechRecognition instance
             status = sr.StartRec(source, handler);
             notify("AFTER start : " + status);
-            while (true)
+            running = true;
+            while (running)
             {
                 System.Threading.Thread.Sleep(5);
             }
-
             session.Dispose();
+        }
 
+        public void Close()
+        {
+            running = false;
         }
 
         public PXCMAudioSource.DeviceInfo GetCheckedSource()
@@ -75,6 +93,10 @@ namespace recognizer
             return devices[1];
         }
 
+        public void CheckDevice(int id)
+        {
+            checkedDevice = id;
+        }
 
         public void OnRecognition(PXCMSpeechRecognition.RecognitionData data)
         {
@@ -82,6 +104,11 @@ namespace recognizer
             notify("RECOGNIZED tags : " + data.scores[0].tags);
             recognized(data);
         }
+    }
+
+     public class Grammar{
+        public int id {set;get;}
+        public string[] commands {set; get;}
     }
 
 }

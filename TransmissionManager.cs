@@ -93,6 +93,11 @@ namespace recognizer
         {
             onConnectionStatusChanged(status);
         }
+        public void SendMessage(Request response)
+        {
+            if (handler != null)
+                handler.SendMessage(response);
+        }
     }
 
     class ClientHandler
