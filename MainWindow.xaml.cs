@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,7 @@ using WinForms = System.Windows.Forms;
 namespace recognizer
 {
     public delegate void OnMessage(Request request);
+    public delegate void OnDisconnect();
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
@@ -40,31 +42,177 @@ namespace recognizer
             RunTransmission();
         }
 
-        private void ScanAudioDevices(){
+        private void ScanAudioDevices()
+        {
             List<PXCMAudioSource.DeviceInfo> devices = recognizer.LoadAudioDevices();
             if (devices != null && devices.Count != 0)
-                for (int i = 0; i < devices.Count-1; i++)
+            {
+                foreach (PXCMAudioSource.DeviceInfo d in devices)
                 {
-                    this.Dispatcher.BeginInvoke(new Action(() => devicesCombo.Items.Add(devices[i].name)));
+                    this.Dispatcher.BeginInvoke(new Action(() => devicesCombo.Items.Add((string)d.name.Clone())));
                 }
+                this.Dispatcher.BeginInvoke(new Action(() => devicesCombo.SelectedIndex = 0));
+            }
             else
                 AddToHistory("DEVICES DOESN'T FOUND");
         }
         private void OnDisconnect()
         {
-
+            try
+            {
+                if (recognitionRan)
+                {
+                    recognizer.Close();
+                    recognitionRan = false;
+                    recognizer = null;
+                    ChandeRecognitionStatus("not started");
+                    ConfigureRecognizer();
+                }
+            }
+            catch (Exception e)
+            {
+                AddToHistory("ERROR :" + e.Message);
+            }
         }
 
-        private void ConfigureRecognizer(){
+
+
+        private void ConfigureRecognizer()
+        {
             recognizer = new Recognizer(OnRecognized, AddToHistory);
         }
 
-        private void ConfigureTransmission(){
+        private void ConfigureTransmission()
+        {
             transmission = new TransmissionManager(OnReseivedMessage, OnSentMessage, AddToHistory);
             transmission.onConnectionStatusChanged += OnConnectionStatusChanged;
             transmission.onServerStatusChanged += OnServerStatusChanged;
+            transmission.onDisconnect += this.OnDisconnect;
         }
 
+        private void RunTransmission()
+        {
+            if (!transmissionRan)
+            {
+                new Thread(() =>
+              {
+                  transmission.Run();
+
+              }).Start();
+                transmissionRan = true;
+            }
+        }
+
+        private void AddToHistory(String message)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() => historyListBox.Items.Add(message)));
+        }
+
+        private void OnSentMessage(String message)
+        {
+            AddToHistory("SENT : " + message);
+        }
+
+        private void OnReseivedMessage(Request message)
+        {
+            switch (message.requestType)
+            {
+                case Requests.START_RECOGNITION:
+                    AddToHistory("Start recognition");
+                    OnRecognitionStart();
+                    OnCommand("START RECOGNITION");
+                    break;
+                case Requests.ADD_TO_DICTIONARY:
+                    AddToHistory("Add to history command ignored");
+                    OnCommand("ADD TO DICTIONARY");
+                    break;
+                case Requests.LOAD_DICTIONARY:
+                    AddToHistory("Load history command");
+                    OnCommand("LOAD DICTIONARY");
+                    OnLoadDictionary(message.data);
+                    break;
+                case Requests.SYNTHESIZE:
+                    AddToHistory("Synhesize command");
+                    OnCommand("SYNTHESIZE");
+                    Synthesizer.Speak(message.data.ToString());
+                    break;
+            }
+        }
+
+        class Dictionary
+        {
+            public Grammar[] grammars { set; get; }
+        }
+
+        private void OnLoadDictionary(object dict)
+        {
+            Dictionary dictionary = JsonConvert.DeserializeObject<Dictionary>(dict.ToString());
+            if (recognizer != null)
+                recognizer.LoadGrammars(dictionary.grammars.ToList());
+        }
+
+        private void OnRecognitionStart()
+        {
+            if (!recognitionRan)
+            {
+                recognitionThread = new Thread(() =>
+                 {
+                     recognizer.Run();
+                 });
+                recognitionThread.Start();
+                recognitionRan = true;
+                ChandeRecognitionStatus("running");
+            }
+        }
+
+        private void ChandeRecognitionStatus(string content)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() => recStatusLbl.Content = content));
+        }
+
+        private void OnCommand(string content)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() => lastCommandLbl.Content = content));
+        }
+        private void OnServerStatusChanged(string status)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() => serverStatusLbl.Content = status));
+        }
+
+        private void OnConnectionStatusChanged(string status)
+        {
+            this.Dispatcher.BeginInvoke(new Action(() => connectionLbl.Content = status));
+        }
+
+        private void OnRecognized(PXCMSpeechRecognition.RecognitionData data)
+        {
+
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            if (transmissionRan)
+                transmission.Close();
+            // OnDisconnect();
+            if (recognitionRan)
+            {
+                recognizer.Close();
+                recognizer = null;
+            }
+
+        }
+
+        private void devicesCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            AddToHistory("SELECTED : " + devicesCombo.SelectedIndex);
+            if (recognizer != null)
+                recognizer.CheckDevice(devicesCombo.SelectedIndex);
+        }
+    }
+}
+
+
+/*
         private void InitTray()
         {
             this.notifier.MouseDown += new WinForms.MouseEventHandler(notifier_MouseDown);
@@ -103,88 +251,4 @@ namespace recognizer
             MessageBox.Show("Close");
         }
 
-
-        private void RunTransmission()
-        {
-            if (!transmissionRan)
-            {
-                new Thread(() =>
-              {
-                  transmission.Run();
-
-              }).Start();
-                transmissionRan = true;
-            }
-        }
-
-        private void AddToHistory(String message)
-        {
-            this.Dispatcher.BeginInvoke(new Action(() => historyListBox.Items.Add(message)));
-        }
-
-        private void OnSentMessage(String message)
-        {
-            AddToHistory("SENT : " + message);
-        }
-
-        private void OnReseivedMessage(Request message)
-        {
-            switch (message.requestType)
-            {
-                case Requests.START_RECOGNITION:
-                    AddToHistory("Start recognition");
-                    OnRecognitionStart();
-                    OnCommand("START RECOGNITION");
-                    break;
-                case Requests.ADD_TO_DICTIONARY:
-                    AddToHistory("Add to history commend");
-                    OnCommand("ADD TO DICTIONARY");
-                    break;
-                case Requests.LOAD_DICTIONARY:
-                    AddToHistory("Load history commend");
-                    OnCommand("LOAD DICTIONARY");
-                    break;
-            }
-        }
-
-        private void OnRecognitionStart()
-        {
-            if (!recognitionRan)
-            {
-                new Thread(() =>
-                {
-                    recognizer.Run();
-                }).Start();
-                recognitionRan = true;
-            }
-        }
-
-        private void OnCommand(string content)
-        {
-            this.Dispatcher.BeginInvoke(new Action(() => lastCommandLbl.Content = content));
-        }
-        private void OnServerStatusChanged(string status)
-        {
-            this.Dispatcher.BeginInvoke(new Action(() => serverStatusLbl.Content = status));
-        }
-
-        private void OnConnectionStatusChanged(string status)
-        {
-            this.Dispatcher.BeginInvoke(new Action(() => connectionLbl.Content = status));
-        }
-
-        private void OnRecognized(PXCMSpeechRecognition.RecognitionData data)
-        {
-
-        }
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            if(transmissionRan)
-                transmission.Close();
-            if (recognitionRan)
-                recognizer.Close();
-
-        }
-    }
-}
+        */

@@ -18,7 +18,7 @@
         <Label x:Name="serverStatusLbl" Content="not started" HorizontalAlignment="Left" Margin="153,239,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.311,0.577"/>
         <Label Content="Server status" HorizontalAlignment="Left" Margin="24,240,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.64,0.231"/>
         <Label Content="Connection:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="26,123,0,0" RenderTransformOrigin="0.342,0.538"/>
-        <ComboBox x:Name="devicesCombo" HorizontalAlignment="Left" Margin="24,38,0,0" VerticalAlignment="Top" Width="215"/>
+        <ComboBox x:Name="devicesCombo" HorizontalAlignment="Left" Margin="24,38,0,0" VerticalAlignment="Top" Width="215" SelectionChanged="devicesCombo_SelectionChanged"/>
         <Label Content="Device :" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="24,10,0,0" RenderTransformOrigin="0.342,0.538"/>
 
     </Grid>

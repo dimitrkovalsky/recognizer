@@ -24,6 +24,7 @@ namespace recognizer
         private Thread clientThread;
         public event Notify onServerStatusChanged;
         public event Notify onConnectionStatusChanged;
+        public event OnDisconnect onDisconnect;
 
         public TransmissionManager(OnMessage onMessageReseived, Notify onMessageSent, Notify notify)
         {
@@ -98,6 +99,11 @@ namespace recognizer
             if (handler != null)
                 handler.SendMessage(response);
         }
+
+        internal void ClientDisconnected()
+        {
+            onDisconnect();
+        }
     }
 
     class ClientHandler
@@ -162,7 +168,7 @@ namespace recognizer
                 {
                     if (srReceiver.CanRead)
                     {
-                        byte[] myReadBuffer = new byte[1024];
+                        byte[] myReadBuffer = new byte[2048];
                         StringBuilder message = new StringBuilder();
                         int numberOfBytesRead = 0;
                         do
@@ -171,7 +177,7 @@ namespace recognizer
                             message.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
                         }
                         while (srReceiver.DataAvailable);
-
+                       
                         processMessage(message.ToString());
                     }
                 }
@@ -180,6 +186,7 @@ namespace recognizer
             {
                 notify("Error " + e.Message);
                 manager.ChangeConnationStatus("Failed");
+                manager.ClientDisconnected();
             }
         }
 

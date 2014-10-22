@@ -107,7 +107,9 @@
     <Compile Include="Recognizer.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Requests.cs" />
+    <Compile Include="Synthesizer.cs" />
     <Compile Include="TransmissionManager.cs" />
+    <Compile Include="VoiceOut.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

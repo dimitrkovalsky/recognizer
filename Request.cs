@@ -16,6 +16,6 @@ namespace recognizer
         }
 
         public int requestType { set; get; }
-        public string data { set; get; }
+        public object data { set; get; }
     }
 }

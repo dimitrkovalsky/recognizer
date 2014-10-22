@@ -25,10 +25,6 @@ namespace recognizer
             this.notify = notify;
         }
 
-        public void SetDictationMode()
-        {
-            this.dictationMode = true;
-        }
   
         public List<PXCMAudioSource.DeviceInfo> LoadAudioDevices()
         {
@@ -48,11 +44,6 @@ namespace recognizer
             return devices;
         }
 
-        public void LoadGrammars(List<Grammar> grms)
-        {
-            grammars = grms;
-        }
-
         public void Run()
         {
             PXCMSession session = PXCMSession.CreateInstance();
@@ -64,23 +55,15 @@ namespace recognizer
             sr.QueryProfile(0, out pinfo);
             sr.SetProfile(pinfo);
 
-            if (dictationMode)
-                sr.SetDictation();
-            else
-            {
-                List<String> cmds = new List<string>();
-                List<int> labels = new List<int>();
-                foreach (Grammar g in grammars)
-                {
-                    cmds.Add(g.command);
-                    labels.Add(g.label);
-                }
-                sr.BuildGrammarFromStringList(1, cmds.ToArray(), labels.ToArray());
-                // Set the active grammar.
-                sr.SetGrammar(1);
-            }
+            String[] cmds = new String[3] { "One", "Two", "Three" };
+            // Build the grammar.
+            sr.BuildGrammarFromStringList(1, cmds, null);
+            // Set the active grammar.
+            sr.SetGrammar(1);
 
+            //sr.SetDictation();
             PXCMAudioSource source;
+
             source = session.CreateAudioSource();
             source.ScanDevices();
             if (devices == null)
@@ -99,7 +82,8 @@ namespace recognizer
             }
             sr.StopRec();
             source.Dispose();
-            session.Dispose();
+           
+           // session.Dispose();
         }
 
         public void Close()
@@ -121,14 +105,14 @@ namespace recognizer
         public void OnRecognition(PXCMSpeechRecognition.RecognitionData data)
         {
             notify("RECOGNIZED sentence : " + data.scores[0].sentence);
-            notify("RECOGNIZED tags : " + data.scores[0].label);
+            notify("RECOGNIZED tags : " + data.scores[0].tags);
             recognized(data);
         }
     }
 
      public class Grammar{
-        public int label { set; get; }
-        public string command {set; get;}
+        public int id {set;get;}
+        public string[] commands {set; get;}
     }
 
 }
