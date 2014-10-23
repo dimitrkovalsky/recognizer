@@ -1,1 +1,2 @@
 E:\GitHub\recognizer\recognizer\bin\Debug\recognizer.exe.config
+D:\github\recognizer\bin\Debug\recognizer.exe.config

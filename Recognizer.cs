@@ -33,6 +33,7 @@ namespace recognizer
         public List<PXCMAudioSource.DeviceInfo> LoadAudioDevices()
         {
             PXCMSession session = PXCMSession.CreateInstance();
+            notify(String.Format("SDK Version {0}.{1}", session.QueryVersion().major, session.QueryVersion().minor));
             PXCMAudioSource source;
             source = session.CreateAudioSource();
             source.ScanDevices();
@@ -56,7 +57,7 @@ namespace recognizer
         public void Run()
         {
             PXCMSession session = PXCMSession.CreateInstance();
-            notify(String.Format("SDK Version {0}.{1}", session.QueryVersion().major, session.QueryVersion().minor));
+           
             PXCMSpeechRecognition sr;
             pxcmStatus status = session.CreateImpl<PXCMSpeechRecognition>(out sr);
             notify("STATUS : " + status);
@@ -98,8 +99,8 @@ namespace recognizer
                 System.Threading.Thread.Sleep(5);
             }
             sr.StopRec();
-            source.Dispose();
-            session.Dispose();
+      //      source.Dispose();
+       //     session.Dispose();
         }
 
         public void Close()
@@ -109,8 +110,8 @@ namespace recognizer
 
         public PXCMAudioSource.DeviceInfo GetCheckedSource()
         {
-            notify("SELECTED : " + devices[1].name);
-            return devices[1];
+            notify("SELECTED : " + devices[checkedDevice].name);
+            return devices[checkedDevice];
         }
 
         public void CheckDevice(int id)

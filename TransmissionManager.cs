@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace recognizer
@@ -117,6 +118,7 @@ namespace recognizer
         private Notify onMessageSent;
         private Notify notify;
         private TransmissionManager manager;
+        private String END_PACKET = "EEENNNDDD";
 
         public ClientHandler(TcpClient client, OnMessage onMessageReseived, Notify onMessageSent, Notify notify, TransmissionManager manager)
         {
@@ -178,7 +180,7 @@ namespace recognizer
                         }
                         while (srReceiver.DataAvailable);
                        
-                        processMessage(message.ToString());
+                        ProcessMessage(message.ToString());
                     }
                 }
             }
@@ -190,11 +192,19 @@ namespace recognizer
             }
         }
 
-        private void processMessage(String message)
+        private void ProcessMessage(String message)
         {
-            notify("Received : " + message);
-            Request request = JsonConvert.DeserializeObject<Request>(message);
-            onMessageReseived(request);
+            
+            string[] messages = message.Split(new String[] { END_PACKET }, StringSplitOptions.RemoveEmptyEntries);
+            foreach(String msg in messages)
+            {
+                string singleMessage = msg;
+                if (msg.Contains(END_PACKET))
+                    singleMessage = msg.Substring(0, msg.LastIndexOf(END_PACKET));
+                notify("Received : " + singleMessage);
+                Request request = JsonConvert.DeserializeObject<Request>(singleMessage);
+                onMessageReseived(request);
+            }
         }
 
 
