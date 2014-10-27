@@ -186,7 +186,7 @@ namespace recognizer
 
         private void OnRecognized(PXCMSpeechRecognition.RecognitionData data)
         {
-
+            transmission.SendMessage(new Request(Requests.RECOGNITION_RESULT, data));
         }
 
         private void Window_Closed(object sender, EventArgs e)

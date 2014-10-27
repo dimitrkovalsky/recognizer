@@ -56,51 +56,54 @@ namespace recognizer
 
         public void Run()
         {
-            PXCMSession session = PXCMSession.CreateInstance();
-           
-            PXCMSpeechRecognition sr;
-            pxcmStatus status = session.CreateImpl<PXCMSpeechRecognition>(out sr);
-            notify("STATUS : " + status);
-            PXCMSpeechRecognition.ProfileInfo pinfo;
-            sr.QueryProfile(0, out pinfo);
-            sr.SetProfile(pinfo);
-
-            if (dictationMode)
-                sr.SetDictation();
-            else
+            using (PXCMSession session = PXCMSession.CreateInstance())
             {
-                List<String> cmds = new List<string>();
-                List<int> labels = new List<int>();
-                foreach (Grammar g in grammars)
+
+                PXCMSpeechRecognition sr;
+                pxcmStatus status = session.CreateImpl<PXCMSpeechRecognition>(out sr);
+                notify("STATUS : " + status);
+                PXCMSpeechRecognition.ProfileInfo pinfo;
+                sr.QueryProfile(0, out pinfo);
+                sr.SetProfile(pinfo);
+
+                if (dictationMode)
+                    sr.SetDictation();
+                else
                 {
-                    cmds.Add(g.command);
-                    labels.Add(g.label);
+                    List<String> cmds = new List<string>();
+                    List<int> labels = new List<int>();
+                    foreach (Grammar g in grammars)
+                    {
+                        cmds.Add(g.command);
+                        labels.Add(g.label);
+                    }
+                    sr.BuildGrammarFromStringList(1, cmds.ToArray(), labels.ToArray());
+                    // Set the active grammar.
+                    sr.SetGrammar(1);
                 }
-                sr.BuildGrammarFromStringList(1, cmds.ToArray(), labels.ToArray());
-                // Set the active grammar.
-                sr.SetGrammar(1);
-            }
 
-            PXCMAudioSource source;
-            source = session.CreateAudioSource();
-            source.ScanDevices();
-            if (devices == null)
-                LoadAudioDevices();
-            source.SetDevice(GetCheckedSource());
+                using (PXCMAudioSource source = session.CreateAudioSource())
+                {
+                    source.ScanDevices();
+                    if (devices == null)
+                        LoadAudioDevices();
+                    source.SetDevice(GetCheckedSource());
 
-            PXCMSpeechRecognition.Handler handler = new PXCMSpeechRecognition.Handler();
-            handler.onRecognition = OnRecognition;
-            // sr is a PXCMSpeechRecognition instance
-            status = sr.StartRec(source, handler);
-            notify("AFTER start : " + status);
-            running = true;
-            while (running)
-            {
-                System.Threading.Thread.Sleep(5);
+                    PXCMSpeechRecognition.Handler handler = new PXCMSpeechRecognition.Handler();
+                    handler.onRecognition = OnRecognition;
+                    // sr is a PXCMSpeechRecognition instance
+                    status = sr.StartRec(source, handler);
+                    notify("AFTER start : " + status);
+                    running = true;
+                    while (running)
+                    {
+                        System.Threading.Thread.Sleep(5);
+                    }
+                    sr.StopRec();
+                }
+                //source.Dispose();
             }
-            sr.StopRec();
-      //      source.Dispose();
-       //     session.Dispose();
+            //session.Dispose();
         }
 
         public void Close()

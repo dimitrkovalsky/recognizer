@@ -99,6 +99,8 @@ namespace recognizer
         {
             if (handler != null)
                 handler.SendMessage(response);
+            else
+                notify("Handler is null");
         }
 
         internal void ClientDisconnected()

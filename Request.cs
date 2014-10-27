@@ -9,7 +9,7 @@ namespace recognizer
     {
         public Request() { }
 
-        public Request(int requestType, string data)
+        public Request(int requestType, object data)
         {
             this.requestType = requestType;
             this.data = data;
