@@ -8,28 +8,27 @@ namespace recognizer
 
     public delegate void OnRecognized(PXCMSpeechRecognition.RecognitionData data);
     public delegate void Notify(String notify);
-    
-   
+
+
     class Recognizer
     {
-        private static List<PXCMAudioSource.DeviceInfo> devices = new List<PXCMAudioSource.DeviceInfo>();    
+        private static List<PXCMAudioSource.DeviceInfo> devices = new List<PXCMAudioSource.DeviceInfo>();
+        private const int DICTATION_MODE = 0;
         private OnRecognized recognized;
         private Notify notify;
         private bool running = false;
-        private bool dictationMode = false;
-        private List<Grammar> grammars = null;
+        private Dictionary<int, List<Grammar>> grammars = null;
         private int checkedDevice = 0;
+        private int activeGrammar = DICTATION_MODE; // Default dictation
+        private bool grammarChanged = false;
+
         public Recognizer(OnRecognized recognized, Notify notify)
         {
             this.recognized = recognized;
             this.notify = notify;
         }
 
-        public void SetDictationMode()
-        {
-            this.dictationMode = true;
-        }
-  
+ 
         public List<PXCMAudioSource.DeviceInfo> LoadAudioDevices()
         {
             PXCMSession session = PXCMSession.CreateInstance();
@@ -49,10 +48,23 @@ namespace recognizer
             return devices;
         }
 
-        public void LoadGrammars(List<Grammar> grms)
+        public void LoadGrammars(Dictionary<int, List<Grammar>> grms)
         {
             grammars = grms;
         }
+
+        private int GetActiveGrammar()
+        {
+            return activeGrammar;
+        }
+
+        public void SetActiveGrammar(int grammarId)
+        {
+            this.activeGrammar = grammarId;
+            grammarChanged = true;
+        }
+
+
 
         public void Run()
         {
@@ -66,20 +78,29 @@ namespace recognizer
                 sr.QueryProfile(0, out pinfo);
                 sr.SetProfile(pinfo);
 
-                if (dictationMode)
-                    sr.SetDictation();
-                else
+
+                // Load grammar
+                foreach (KeyValuePair<int, List<Grammar>> pair in grammars)
                 {
                     List<String> cmds = new List<string>();
                     List<int> labels = new List<int>();
-                    foreach (Grammar g in grammars)
+                    foreach (Grammar g in pair.Value)
                     {
                         cmds.Add(g.command);
                         labels.Add(g.label);
                     }
-                    sr.BuildGrammarFromStringList(1, cmds.ToArray(), labels.ToArray());
+                    sr.BuildGrammarFromStringList(pair.Key, cmds.ToArray(), labels.ToArray());
+                }
+
+                int active = GetActiveGrammar();
+                if (active == DICTATION_MODE)
+                {
+                    sr.SetDictation();
+                }
+                else
+                {
                     // Set the active grammar.
-                    sr.SetGrammar(1);
+                    sr.SetGrammar(active);
                 }
 
                 using (PXCMAudioSource source = session.CreateAudioSource())
@@ -94,10 +115,26 @@ namespace recognizer
                     // sr is a PXCMSpeechRecognition instance
                     status = sr.StartRec(source, handler);
                     notify("AFTER start : " + status);
+                    notify("Ran with active grammarId : " + activeGrammar);
                     running = true;
                     while (running)
                     {
-                        System.Threading.Thread.Sleep(5);
+                        System.Threading.Thread.Sleep(1);
+                        if (grammarChanged)
+                        {
+                            int activeGrammarId = GetActiveGrammar();
+                            if (activeGrammarId == DICTATION_MODE)
+                            {
+                                sr.SetDictation();
+                            }
+                            else
+                            {
+                                // Set the active grammar.
+                                sr.SetGrammar(activeGrammarId);
+                            }
+                            notify("Grammar changed into grammarId : " + activeGrammarId);
+                            grammarChanged = false;
+                        }
                     }
                     sr.StopRec();
                 }
@@ -130,9 +167,10 @@ namespace recognizer
         }
     }
 
-     public class Grammar{
+    public class Grammar
+    {
         public int label { set; get; }
-        public string command {set; get;}
+        public string command { set; get; }
     }
 
 }

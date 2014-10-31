@@ -13,7 +13,6 @@ D:\github\recognizer\obj\x64\Debug\recognizer.Properties.Resources.resources
 D:\github\recognizer\obj\x64\Debug\recognizer.csproj.GenerateResource.Cache
 D:\github\recognizer\obj\x64\Debug\recognizer.exe
 D:\github\recognizer\obj\x64\Debug\recognizer.pdb
-D:\github\recognizer\obj\x64\Debug\recognizer.csprojResolveAssemblyReference.cache
 E:\GitHub\recognizer\recognizer\bin\x64\Debug\recognizer.exe.config
 E:\GitHub\recognizer\recognizer\bin\x64\Debug\recognizer.exe
 E:\GitHub\recognizer\recognizer\bin\x64\Debug\recognizer.pdb
@@ -33,3 +32,6 @@ E:\GitHub\recognizer\recognizer\obj\x64\Debug\recognizer.Properties.Resources.re
 E:\GitHub\recognizer\recognizer\obj\x64\Debug\recognizer.csproj.GenerateResource.Cache
 E:\GitHub\recognizer\recognizer\obj\x64\Debug\recognizer.exe
 E:\GitHub\recognizer\recognizer\obj\x64\Debug\recognizer.pdb
+D:\github\recognizer\bin\x64\Debug\Hardcodet.Wpf.TaskbarNotification.pdb
+D:\github\recognizer\bin\x64\Debug\Hardcodet.Wpf.TaskbarNotification.xml
+D:\github\recognizer\obj\x64\Debug\recognizer.csprojResolveAssemblyReference.cache

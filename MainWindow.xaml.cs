@@ -136,19 +136,24 @@ namespace recognizer
                     OnCommand("SYNTHESIZE");
                     Synthesizer.Speak(message.data.ToString());
                     break;
+                case Requests.CHANGE_ACTIVE_GRAMMAR:
+                    AddToHistory("Change active grammar command");
+                    OnCommand("CHANGE ACTIVE GRAMMAR");
+                    OnChangeActiveGrammar(message.data);
+                    break;
             }
         }
 
-        class Dictionary
+        class GrammarDictionary
         {
-            public Grammar[] grammars { set; get; }
+            public Dictionary<int, List<Grammar>> grammars { set; get; }
         }
 
         private void OnLoadDictionary(object dict)
         {
-            Dictionary dictionary = JsonConvert.DeserializeObject<Dictionary>(dict.ToString());
+            GrammarDictionary dictionary = JsonConvert.DeserializeObject<GrammarDictionary>(dict.ToString());
             if (recognizer != null)
-                recognizer.LoadGrammars(dictionary.grammars.ToList());
+                recognizer.LoadGrammars(dictionary.grammars);
         }
 
         private void OnRecognitionStart()
@@ -168,6 +173,15 @@ namespace recognizer
         private void ChandeRecognitionStatus(string content)
         {
             this.Dispatcher.BeginInvoke(new Action(() => recStatusLbl.Content = content));
+        }
+
+        private void  OnChangeActiveGrammar(object data)
+        {
+            int active = int.Parse(data.ToString());
+            if (recognizer != null)
+                recognizer.SetActiveGrammar(active);
+            string label = active == 0 ? "Dication" : active.ToString();
+            this.Dispatcher.BeginInvoke(new Action(() => activeGrammar_lbl.Content = label));
         }
 
         private void OnCommand(string content)
