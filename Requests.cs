@@ -12,6 +12,7 @@ namespace recognizer
         public const int ADD_TO_DICTIONARY = 11;
         public const int CHANGE_ACTIVE_GRAMMAR = 13;
         public const int START_RECOGNITION = 15;
+        public const int RECOGNITION_STARTED = 16;
         public const int RECOGNITION_RESULT = 20;
         public const int SYNTHESIZE = 30;
     }

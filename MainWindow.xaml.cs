@@ -75,11 +75,9 @@ namespace recognizer
             }
         }
 
-
-
         private void ConfigureRecognizer()
         {
-            recognizer = new Recognizer(OnRecognized, AddToHistory);
+            recognizer = new Recognizer(OnRecognized, AddToHistory, this);
         }
 
         private void ConfigureTransmission()
@@ -101,6 +99,15 @@ namespace recognizer
               }).Start();
                 transmissionRan = true;
             }
+        }
+
+        public void SendRecognitionStarted()
+        {
+            if (transmission != null)
+            {
+                transmission.SendMessage(new Request(Requests.RECOGNITION_STARTED, null));
+            }
+
         }
 
         private void AddToHistory(String message)

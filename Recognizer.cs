@@ -21,11 +21,13 @@ namespace recognizer
         private int checkedDevice = 0;
         private int activeGrammar = DICTATION_MODE; // Default dictation
         private bool grammarChanged = false;
+        private MainWindow window;
 
-        public Recognizer(OnRecognized recognized, Notify notify)
+        public Recognizer(OnRecognized recognized, Notify notify, MainWindow window)
         {
             this.recognized = recognized;
             this.notify = notify;
+            this.window = window;
         }
 
  
@@ -70,7 +72,6 @@ namespace recognizer
         {
             using (PXCMSession session = PXCMSession.CreateInstance())
             {
-
                 PXCMSpeechRecognition sr;
                 pxcmStatus status = session.CreateImpl<PXCMSpeechRecognition>(out sr);
                 notify("STATUS : " + status);
@@ -109,7 +110,7 @@ namespace recognizer
                     if (devices == null)
                         LoadAudioDevices();
                     source.SetDevice(GetCheckedSource());
-
+                 //   source.SetVolume(0.2f);
                     PXCMSpeechRecognition.Handler handler = new PXCMSpeechRecognition.Handler();
                     handler.onRecognition = OnRecognition;
                     // sr is a PXCMSpeechRecognition instance
@@ -117,6 +118,7 @@ namespace recognizer
                     notify("AFTER start : " + status);
                     notify("Ran with active grammarId : " + activeGrammar);
                     running = true;
+                    window.SendRecognitionStarted();
                     while (running)
                     {
                         System.Threading.Thread.Sleep(1);

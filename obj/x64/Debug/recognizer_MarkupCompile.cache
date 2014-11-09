@@ -4,16 +4,16 @@
 winexe
 C#
 .cs
-D:\github\recognizer\obj\x64\Debug\
+E:\GitHub\recognizer\recognizer\obj\x64\Debug\
 recognizer
 none
 false
 DEBUG;TRACE
-D:\github\recognizer\App.xaml
+E:\GitHub\recognizer\recognizer\App.xaml
 11151548125
 
 11-490652966
-191935603950
+19560877458
 MainWindow.xaml;
 
 False

@@ -35,3 +35,4 @@ E:\GitHub\recognizer\recognizer\obj\x64\Debug\recognizer.pdb
 D:\github\recognizer\bin\x64\Debug\Hardcodet.Wpf.TaskbarNotification.pdb
 D:\github\recognizer\bin\x64\Debug\Hardcodet.Wpf.TaskbarNotification.xml
 D:\github\recognizer\obj\x64\Debug\recognizer.csprojResolveAssemblyReference.cache
+E:\GitHub\recognizer\recognizer\obj\x64\Debug\recognizer.csprojResolveAssemblyReference.cache
